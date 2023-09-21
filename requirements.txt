@@ -1,0 +1,6 @@
+r5py
+geopandas
+shapely
+pandas
+flask
+flask-cors

@@ -1,0 +1,5 @@
+route_id,agency_id,route_short_name,route_long_name,route_desc,route_type,route_url,route_color,route_text_color
+69952,1,1,TORONTO DESTINATION,,3,,D5C82B,0
+69953,2,TestBot,To Toronto 2,,3,,D5C82B,0
+69954,2,TestBot,To Toronto 2,,3,,D5C82B,0
+69955,2,Carpool,08:30:00 Route,,3,,D5C82B,000000

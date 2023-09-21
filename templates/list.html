@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toronto Route Calculator</title>
+    <style>
+        /* Style the page container */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        /* Style the map container */
+        #map {
+            height: 400px;
+            width: 80%;
+            max-width: 800px;
+            margin-bottom: 20px;
+        }
+
+        /* Style the input fields and button */
+        .input-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        #origin-input, #destination-input {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        #time-input {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        #get-route-button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #get-route-button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Style the List Carpool button */
+        #list-carpool-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #list-carpool-button:hover {
+            background-color: #1e7e34;
+        }
+    </style>
+</head>
+<body>
+    <h1>List carpool</h1>
+    <div class="input-container">
+        <input type="text" id="origin-input" placeholder="Enter origin">
+    </div>
+    <div class="input-container">
+        <input type="text" id="destination-input" placeholder="Enter destination">
+    </div>
+    <div class="input-container">
+        <input type="text" id="time-input" placeholder="Enter departure time in 24hrs. E.g. 18:30">
+    </div>
+    <button id="get-route-button" onclick="calculateRoute()">Get Route</button>
+    <div id="map"></div>
+
+    <div id="travel-time"></div> <!-- To display the estimated travel time -->
+
+    <button id="list-carpool-button" onclick="listCarpool()">List Carpool</button>
+
+    <script>
+        let routeCoordinates; // Variable to store route coordinates
+        let estimatedTravelTimeSeconds; // Variable to store estimated travel time in seconds
+
+        // Initialize the map
+        function initMap() {
+            const toronto = { lat: 43.651070, lng: -79.347015 }; // Toronto coordinates
+            const map = new google.maps.Map(document.getElementById('map'), {
+                center: toronto,
+                zoom: 12
+            });
+
+            const directionsService = new google.maps.DirectionsService();
+            const directionsRenderer = new google.maps.DirectionsRenderer();
+            directionsRenderer.setMap(map);
+
+            window.calculateRoute = function() {
+                const origin = document.getElementById('origin-input').value;
+                const destination = document.getElementById('destination-input').value;
+
+                // Create a DirectionsRequest object
+                const request = {
+                    origin: origin,
+                    destination: destination,
+                    travelMode: google.maps.TravelMode.DRIVING
+                };
+
+                // Send the request to the Directions service
+                directionsService.route(request, function(response, status) {
+                    if (status === google.maps.DirectionsStatus.OK) {
+                        // Display the route on the map
+                        directionsRenderer.setDirections(response);
+                        // Store route coordinates
+                        routeCoordinates = response.routes[0].overview_path;
+                        
+                        // Calculate and store estimated travel time in seconds
+                        estimatedTravelTimeSeconds = response.routes[0].legs.reduce((sum, leg) => sum + leg.duration.value, 0);
+
+                        // Display the estimated travel time in seconds (for testing)
+                        console.log('Estimated Travel Time (seconds):', estimatedTravelTimeSeconds);
+                    } else {
+                        alert('Error: ' + status);
+                    }
+                });
+            };
+
+            window.listCarpool = function() {
+                const selectedTime = document.getElementById('time-input').value;
+
+                if (routeCoordinates) {
+                    // Create the carpoolData object
+                    const carpoolData = {
+                        routeCoordinates: routeCoordinates,
+                        time: selectedTime,
+                        estimatedTravelTimeSeconds: estimatedTravelTimeSeconds
+                    };
+                    console.log(carpoolData);
+                    // Send route coordinates, selectedTime, and estimatedTravelTimeSeconds to your API
+                    fetch('http://127.0.0.1:8000/api/create_carpool', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(carpoolData) // Include carpoolData in the request body
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('API Response:', data);
+                        alert('Carpool listed successfully.');
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error listing carpool.');
+                    });
+                } else {
+                    alert('Please calculate a route before listing a carpool.');
+                }
+            };
+        }
+    </script>
+    <!-- Load the Google Maps JavaScript API with your API key -->
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBCdi6XpZjJklEW3R0dNjWiezeKA9o3q9I&callback=initMap"
+        async defer
+    ></script>
+</body>
+</html>
+

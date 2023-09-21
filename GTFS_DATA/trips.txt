@@ -1,0 +1,5 @@
+route_id,service_id,trip_id,trip_headsign,trip_short_name,direction_id,block_id,shape_id,wheelchair_accessible,bikes_allowed
+69952,1,20000,Pool 1,,1,2003877,977934,0,0
+69953,5,20001,Pool 2,,1,2003878,977935,0,0
+69954,5,20002,Pool 2,,1,2003879,977936,0,0
+69955,5,20003,Pool 2,,1,2003880,977937,0,0
